@@ -105,6 +105,9 @@ const premios = [
 ];
 
 function girar() {
+  const flecha = document.querySelector(".flecha");
+
+flecha.classList.add("rebotando");
   if (girando) return;
 
   girando = true;
