@@ -47,12 +47,29 @@
 
    .flecha {
   position: absolute;
-  top: -30px; /* más arriba */
+  top: -15px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 40px;
-  color: white;
+  width: 0;
+  height: 0;
+
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 25px solid white;
+
   z-index: 10;
+}
+
+    @keyframes vibrar {
+  0% { transform: translateX(-50%) rotate(0deg); }
+  25% { transform: translateX(-50%) rotate(10deg); }
+  50% { transform: translateX(-50%) rotate(-10deg); }
+  75% { transform: translateX(-50%) rotate(6deg); }
+  100% { transform: translateX(-50%) rotate(0deg); }
+}
+
+.flecha.rebotando {
+  animation: vibrar 0.2s linear infinite;
 }
 
     button {
@@ -71,7 +88,7 @@
 <h1>🎰 Ruleta</h1>
 
 <div class="ruleta-container">
-  <div class="flecha">▼</div>
+  <div class="flecha"></div>
   <div id="ruleta" class="ruleta"></div>
 </div>
 
