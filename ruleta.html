@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ruleta</title>
+
+  <style>
+    body {
+      background: #1a1a1a;
+      color: white;
+      text-align: center;
+      font-family: Arial;
+    }
+
+    .ruleta-container {
+      position: relative;
+      width: 300px;
+      margin: 50px auto;
+    }
+
+    .ruleta {
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      border: 10px solid gold;
+      background: conic-gradient(
+        #ff3c00 0deg 30deg,
+        #ffd966 30deg 60deg,
+        #ff3c00 60deg 90deg,
+        #ffd966 90deg 120deg,
+        #ff3c00 120deg 150deg,
+        #ffd966 150deg 180deg,
+        #ff3c00 180deg 210deg,
+        #ffd966 210deg 240deg,
+        #ff3c00 240deg 270deg,
+        #ffd966 270deg 300deg,
+        #ff3c00 300deg 330deg,
+        #ffd966 330deg 360deg
+      );
+      transition: transform 4s ease-out;
+    }
+
+    .flecha {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 30px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background: gold;
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🎰 Ruleta</h1>
+
+<div class="ruleta-container">
+  <div class="flecha">▼</div>
+  <div id="ruleta" class="ruleta"></div>
+</div>
+
+<button onclick="girar()">Girar</button>
+
+<h2 id="resultado"></h2>
+
+<script>
+let girando = false;
+
+const premios = [
+  "5", "10", "0", "25", "50", "1",
+  "5", "20", "JACKPOT", "15", "100", "5"
+];
+
+function girar() {
+  if (girando) return;
+
+  girando = true;
+
+  const ruleta = document.getElementById("ruleta");
+  const resultado = document.getElementById("resultado");
+
+  let random = Math.floor(Math.random() * 360);
+  let vueltas = 5 * 360;
+
+  let rotacion = vueltas + random;
+
+  ruleta.style.transform = `rotate(${rotacion}deg)`;
+
+  setTimeout(() => {
+    let anguloFinal = rotacion % 360;
+    let sector = Math.floor((360 - anguloFinal) / (360 / premios.length));
+
+    let premio = premios[sector];
+
+    resultado.innerText = "Resultado: " + premio;
+
+    girando = false;
+  }, 4000);
+}
+</script>
+
+</body>
+</html>
