@@ -1,52 +1,182 @@
-<audio id="tickSound" src="https://www.myinstants.com/media/sounds/roulette.mp3"></audio>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ruleta</title>
+
+<style>
+body {
+  margin: 0;
+  background: #111;
+  color: white;
+  font-family: Arial;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* CONTENEDOR */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* RULETA */
+.ruleta-container {
+  position: relative;
+  margin-top: 20px;
+}
+
+canvas {
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  border: 10px solid gold;
+  box-shadow: 0 0 30px gold;
+}
+
+/* BOTÓN */
+button {
+  margin-top: 30px;
+  padding: 12px 25px;
+  font-size: 18px;
+  background: gold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* RESULTADO */
+#resultado {
+  margin-top: 15px;
+  font-size: 20px;
+}
+
+/* FLECHA */
+.flecha {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-bottom: 35px solid white;
+  filter: drop-shadow(0 0 6px black);
+  transition: transform 0.1s;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>🎰 Ruleta</h1>
+
+  <div class="ruleta-container">
+    <div class="flecha"></div>
+    <canvas id="ruleta" width="400" height="400"></canvas>
+  </div>
+
+  <button onclick="girar()">Girar</button>
+
+  <p id="resultado">Resultado: -</p>
+
+</div>
+
+<!-- 🔊 SONIDO -->
+<audio id="tickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-click-metallic-1312.mp3"></audio>
 
 <script>
-let girando = false;
+const canvas = document.getElementById("ruleta");
+const ctx = canvas.getContext("2d");
 
 const premios = [
   "5", "10", "0", "25", "50", "1",
   "5", "20", "100", "15", "5", "10"
 ];
 
+const colores = ["#ff3c00", "#ffd966"];
+
+let anguloActual = 0;
+let girando = false;
+
+/* 🎨 DIBUJAR RULETA */
+function dibujarRuleta() {
+  const total = premios.length;
+  const angulo = (2 * Math.PI) / total;
+
+  for (let i = 0; i < total; i++) {
+    ctx.beginPath();
+    ctx.moveTo(200, 200);
+    ctx.arc(
+      200,
+      200,
+      200,
+      i * angulo,
+      (i + 1) * angulo
+    );
+    ctx.fillStyle = colores[i % 2];
+    ctx.fill();
+    ctx.closePath();
+
+    // texto
+    ctx.save();
+    ctx.translate(200, 200);
+    ctx.rotate(i * angulo + angulo / 2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "black";
+    ctx.font = "20px Arial";
+    ctx.fillText(premios[i], 180, 10);
+    ctx.restore();
+  }
+}
+
+dibujarRuleta();
+
+/* 🎰 GIRAR */
 function girar() {
   if (girando) return;
 
   girando = true;
 
-  const ruleta = document.getElementById("ruleta");
+  const sonido = document.getElementById("tickSound");
   const resultado = document.getElementById("resultado");
   const flecha = document.querySelector(".flecha");
-  const sonido = document.getElementById("tickSound");
 
-  flecha.classList.add("rebotando");
+  let velocidad = Math.random() * 20 + 25;
+  let desaceleracion = 0.97;
 
-  let grados = 0;
-  let velocidad = 30; // velocidad inicial
-  let desaceleracion = 0.97; // qué tan rápido frena
-  let angulo = 0;
+  let ultimoSector = -1;
 
   function animar() {
-    if (velocidad > 0.5) {
-      grados += velocidad;
+    if (velocidad > 0.3) {
+      anguloActual += velocidad;
       velocidad *= desaceleracion;
 
-      ruleta.style.transform = `rotate(${grados}deg)`;
+      canvas.style.transform = `rotate(${anguloActual}deg)`;
 
-      // 🎯 DETECTAR CAMBIO DE SECTOR (TIC)
-      let nuevoAngulo = Math.floor((grados % 360) / (360 / premios.length));
+      let sector = Math.floor((anguloActual % 360) / (360 / premios.length));
 
-      if (nuevoAngulo !== angulo) {
-        angulo = nuevoAngulo;
+      if (sector !== ultimoSector) {
+        ultimoSector = sector;
 
-        // sonido
+        // 🔊 sonido
         sonido.currentTime = 0;
         sonido.play();
 
-        // pequeño golpe visual
-        flecha.style.transform = "translateX(-50%) rotate(15deg)";
+        // 🔥 rebote flecha
+        flecha.style.transform = "translateX(-50%) rotate(25deg)";
+        setTimeout(() => {
+          flecha.style.transform = "translateX(-50%) rotate(-10deg)";
+        }, 60);
         setTimeout(() => {
           flecha.style.transform = "translateX(-50%) rotate(0deg)";
-        }, 50);
+        }, 120);
       }
 
       requestAnimationFrame(animar);
@@ -56,16 +186,17 @@ function girar() {
   }
 
   function terminar() {
-    let anguloFinal = grados % 360;
+    let anguloFinal = anguloActual % 360;
     let sector = Math.floor((360 - anguloFinal) / (360 / premios.length));
-
     let premio = premios[sector];
-    resultado.innerText = "Resultado: " + premio;
 
-    flecha.classList.remove("rebotando");
+    resultado.innerText = "Resultado: " + premio;
     girando = false;
   }
 
   animar();
 }
 </script>
+
+</body>
+</html>
